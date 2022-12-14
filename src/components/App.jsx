@@ -71,6 +71,11 @@ const App = () => {
           closeModal={onModalClose}
           url={modalImg}
         />)}
+      <Button
+        onClick={onClickLoadMore}
+        isLoading={isLoading}
+        Pictures={pictures}
+      />
     </div>
   )
 };
