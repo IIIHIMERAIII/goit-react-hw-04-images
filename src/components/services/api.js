@@ -1,8 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
 
-
-export const getDataByName = async (searchQ = "", page) => {
-    const { data } = await axios.get(`https://pixabay.com/api/?q=${searchQ}&page=${page}&key=31905644-34f0f3ee38c2737c3d7b24d16&image_type=photo&orientation=horizontal&per_page=12`);
-    return data;
+export async function getDataByName(searchQuerry, page) {
+    try {
+        const response = await axios.get(
+            `https://pixabay.com/api/?q=${searchQuerry}&page=${page}&key=31037310-19e6bbc5f2d6061f6c8861bbf&image_type=photo&orientation=horizontal&per_page=12`
+        );
+        return response.data;
+    } catch (error) {
+        console.log(error);
+    }
 }
 
+export default getDataByName;

@@ -5,78 +5,78 @@ import { getDataByName } from "./services/api";
 import { Loader } from "./loader/loader";
 import { Button } from "./button/button";
 import { Modal } from "./modal/modal"
-
-export class App extends React.Component {
-  state = {
-    pictures: [],
-    searchQ: "",
-    page: 1,
-    isLoading: false,
-    error: "",
-    modalImg: "",
-  };
+import { useEffect } from "react";
+import { useState } from "react";
 
 
-  componentDidUpdate(_, prevState,) {
-    const getApiByName = async (searchQ, page) => {
+const App = () => {
+  const [pictures, setPictures] = useState([]);
+  const [searchQ, setSearchQ] = useState("");
+  const [page, setPage] = useState(1);
+  const [isLoading, setLoader] = useState(false);
+  const [modalImg, setModalImg] = useState("");
+
+  useEffect(() => {
+    if (searchQ) {
+      getApiByName();
+    }
+
+    async function getApiByName() {
       try {
-        this.setState({ isLoading: true });
+        setLoader(true);
         const data = await getDataByName(searchQ, page);
-        this.setState({ isLoading: false });
-        const arr = data.hits;
-        this.state.pictures.push(...arr);
-      } catch (err) {
-        this.setState({
-          error: err.message,
-        });
-      } finally {
-        this.setState({ isLoading: false })
+        if (!data.hits.length) {
+          setLoader(false);
+          return alert("Sorry, we not found images...");
+        }
+        setPictures(prevState => [...prevState, ...data.hits]);
+        setLoader(false);
+        return;
+      } catch (error) {
+        console.log(error);
       }
     }
-    if (prevState.searchQ !== this.state.searchQ) return getApiByName(this.state.searchQ, this.state.page);
-    if (prevState.page !== this.state.page) return getApiByName(this.state.searchQ, this.state.page);
-    else return;
+  }, [searchQ, page]);
+
+  const searchImg = searchQuerry => {
+    if (!searchQuerry || searchQuerry === searchQ) return;
+    setSearchQ(searchQuerry);
+    setPage(1);
+    setPictures([]);
   };
 
-  onFind = (search) => {
-    this.setState({ searchQ: search, pictures: [], page: 1 })
-  }
-
-  onClick = () => {
-    this.setState({ page: this.state.page + 1 });
-
-  }
-
-  onModalOpen = url => {
-    this.setState({ modalImg: url });
+  const onClickLoadMore = () => {
+    setPage(page + 1);
   };
 
-  onModalCLose = () => {
-    this.setState({ modalImg: '' });
+  const onModalOpen = url => {
+    setModalImg(url);
   };
 
-  render() {
-    let isLoading = this.state.isLoading;
-    return (
-      <div>
-        <SearchBar
-          onFind={this.onFind} />
-        <ImageGallery
-          data={this.state.pictures}
-          onClick={this.onModalOpen}
-        />
-        {isLoading && <Loader />}
-        {this.state.modalImg && (
-          <Modal
-            closeModal={this.onModalCLose}
-            url={this.state.modalImg}
-          />)}
-        <Button
-          onClick={this.onClick}
-          isLoading={isLoading}
-          Pictures={this.state.pictures}
-        />
-      </div>
-    )
-  }
-}
+  const onModalClose = () => {
+    setModalImg('');
+  };
+
+  return (
+    <div>
+      <SearchBar
+        onFind={searchImg} />
+      <ImageGallery
+        data={pictures}
+        onClick={onModalOpen}
+      />
+      {isLoading && <Loader />}
+      {modalImg && (
+        <Modal
+          closeModal={onModalClose}
+          url={modalImg}
+        />)}
+      <Button
+        onClick={onClickLoadMore}
+        isLoading={isLoading}
+        Pictures={pictures}
+      />
+    </div>
+  )
+};
+export { App }
